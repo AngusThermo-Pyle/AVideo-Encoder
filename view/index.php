@@ -92,7 +92,7 @@ if (!empty($_GET['noNavbar'])) {
                             <?php
                             if (!empty($_SESSION['login']->siteLogo)) {
                                 ?>
-                                <img src="<?php echo $_SESSION['login']->siteLogo; ?>" class="img-responsive ">    
+                                <img src="<?php echo $_SESSION['login']->siteLogo; ?>?<?php echo uniqid(); ?>" class="img-responsive ">    
                                 <?php
                             }
                             ?>
@@ -225,8 +225,9 @@ if (!empty($_GET['noNavbar'])) {
                 $json_file = url_get_contents($aURL);
                 // convert the string to a json object
                 $advancedCustom = json_decode($json_file);
-                if(empty($advancedCustom)){
-                    error_log("ERROR on get {$aURL} ".$json_file);
+                if (empty($advancedCustom)) {
+                    error_log("ERROR on get {$aURL} " . $json_file);
+                    $advancedCustom = new stdClass();
                 }
                 $result = json_decode($_SESSION['login']->result);
                 if (empty($result->videoHLS)) {
@@ -352,13 +353,17 @@ if (!empty($_GET['noNavbar'])) {
                 </div>
                 <div class="col-md-4" >
                     <div class="panel panel-default">
-                        <div class="panel-heading">Share Videos</div>
+                        <div class="panel-heading"><i class="fa fa-share-alt-square"></i> Share Videos</div>
                         <div class="panel-body">
 
                             <ul class="nav nav-tabs">
                                 <li class="active"><a data-toggle="tab" href="#upload"><i class="fa fa-file" aria-hidden="true"></i> From File</a></li>
+                                <?php
+                                if(empty($global['disableImportVideo'])){
+                                ?>
                                 <li ><a data-toggle="tab" href="#download"><i class="fa fa-globe" aria-hidden="true"></i> Import Video</a></li>
                                 <?php
+                                }
                                 if (Login::canBulkEncode()) {
                                     ?>
                                     <li><a data-toggle="tab" href="#bulk"><span class="glyphicon glyphicon-duplicate"></span> Bulk Encode</a></li>
@@ -368,9 +373,13 @@ if (!empty($_GET['noNavbar'])) {
                             <div class="tab-content">
                                 <div id="upload" class="tab-pane fade in active">
                                     <?php
-                                        include '../view/jquery-file-upload/form.php';
+                                    include '../view/jquery-file-upload/form.php';
                                     ?>
                                 </div>
+                                
+                                <?php
+                                if(empty($global['disableImportVideo'])){
+                                ?>
                                 <div id="download" class="tab-pane fade">
                                     <div class="alert alert-info">
                                         <span class="glyphicon glyphicon-info-sign"></span> Share videos from YouTube and a few <a href="https://rg3.github.io/youtube-dl/supportedsites.html" target="_blank">more sites</a>.
@@ -409,6 +418,7 @@ if (!empty($_GET['noNavbar'])) {
                                 </div>
 
                                 <?php
+                                }
                                 if (Login::canBulkEncode()) {
                                     ?>
 
@@ -465,16 +475,39 @@ if (!empty($_GET['noNavbar'])) {
                         </div>
                     </div>
 
+                    <?php
+                    if (!empty($_SESSION['login']->userGroups)) {
+                        ?>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><i class="fa fa-users"></i> User Groups</div>
+                            <div class="panel-body">
+                                <?php
+                                foreach ($_SESSION['login']->userGroups as $key => $value) {
+                                    ?>
+                                    <label>
+                                        <input type="checkbox" class="usergroups_id" name="usergroups_id[]" value="<?php echo $value->id; ?>">
+                                            <i class="fa fa-lock"></i> <?php echo $value->group_name; ?>
+                                    </label><br>
+                                    <?php
+                                }
+                                ?>
+                                    <div class="alert alert-info" style="margin-bottom: 0px;"><i class="fa fa-info-circle"></i> Unckeck all to make it public</div>
+                                
+                            </div>
+                        </div>
+                        <?php
+                    }
+                    ?>
                     <div class="panel panel-default">
-                        <div class="panel-heading">Resolutions</div>
+                        <div class="panel-heading"><i class="fa fa-desktop"></i> Resolutions</div>
                         <div class="panel-body">
                             <?php
                             if (empty($advancedCustom->doNotShowEncoderHLS)) {
                                 ?> 
                                 <label style="" id="">
                                     <input type="checkbox" id="inputHLS" checked="checked" onclick="if ($(this).is(':checked')) {
-                                $('.mp4Checkbox').prop('checked', false);
-                            }"> Multi Bitrate HLS
+                                                $('.mp4Checkbox').prop('checked', false);
+                                            }"> Multi Bitrate HLS
                                 </label><br>
                                 <?php
                             }
@@ -485,10 +518,10 @@ if (!empty($_GET['noNavbar'])) {
                                                 $('#inputHLS').prop('checked', false);
                                             }"> Low
                                 </label>
-        <?php
-    }
-    if (empty($advancedCustom->doNotShowEncoderResolutionSD)) {
-        ?> 
+                                <?php
+                            }
+                            if (empty($advancedCustom->doNotShowEncoderResolutionSD)) {
+                                ?> 
                                 <label id="">
                                     <input type="checkbox" id="inputSD" <?php if (!empty($advancedCustom->doNotShowEncoderHLS)) echo 'checked="checked"'; ?> class="mp4Checkbox" onclick="if ($(this).is(':checked')) {
                                                 $('#inputHLS').prop('checked', false);
@@ -500,15 +533,16 @@ if (!empty($_GET['noNavbar'])) {
                                 ?> 
                                 <label>
                                     <input type="checkbox" id="inputHD" <?php if (!empty($advancedCustom->doNotShowEncoderHLS)) echo 'checked="checked"'; ?> class="mp4Checkbox" onclick="if ($(this).is(':checked')) {
-                                                $('#inputHLS').prop('checked', false);}"> HD
+                                                $('#inputHLS').prop('checked', false);
+                                            }"> HD
                                 </label>
-        <?php
-    }
-    ?> 
+                                <?php
+                            }
+                            ?> 
                         </div>
                     </div>
                     <div class="panel panel-default">
-                        <div class="panel-heading">Advanced</div>
+                        <div class="panel-heading"><i class="fa fa-cogs"></i> Advanced</div>
                         <div class="panel-body">
                             <label>
                                 <input type="checkbox" id="inputAudioOnly">
@@ -518,19 +552,19 @@ if (!empty($_GET['noNavbar'])) {
                                 <input type="checkbox" id="inputAudioSpectrum">
                                 <span class="glyphicon glyphicon-equalizer"></span> Create Video Spectrum
                             </label>
-    <?php
-    if (empty($global['disableWebM'])) {
-        ?>
+                            <?php
+                            if (empty($global['disableWebM'])) {
+                                ?>
                                 <label  id="webm">
                                     <input type="checkbox" id="inputWebM">
                                     <i class="fa fa-chrome" aria-hidden="true"></i> Extract WebM Video <small class="text-muted">(The encode process will be slow)</small>
-                                    <small class="label label-warning">
+                                    <br><small class="label label-warning">
                                         For Chrome Browsers
                                     </small>
                                 </label>
-        <?php
-    }
-    ?>
+                                <?php
+                            }
+                            ?>
                         </div>
                     </div>
 
@@ -717,7 +751,8 @@ if (!empty($_GET['noNavbar'])) {
                                             "inputLow": $('#inputLow').is(":checked"),
                                             "inputSD": $('#inputSD').is(":checked"),
                                             "inputHD": $('#inputHD').is(":checked"),
-                                            "categories_id": $('#bulk_categories_id').val()
+                                            "categories_id": $('#bulk_categories_id').val(),
+                                            "usergroups_id": $(".usergroups_id:checked").map(function(){ return $(this).val(); }).get()
                                         },
                                         type: 'post',
                                         success: function (response) {
@@ -803,6 +838,7 @@ if (!empty($_GET['noNavbar'])) {
                                                             "inputSD": $('#inputSD').is(":checked"),
                                                             "inputHD": $('#inputHD').is(":checked"),
                                                             "categories_id": $('#download_categories_id').val(),
+                                                            "usergroups_id": $(".usergroups_id:checked").map(function(){ return $(this).val(); }).get(),
                                                             "startIndex": $('#startIndex').val(),
                                                             "endIndex": $('#endIndex').val()
                                                         },
@@ -854,7 +890,8 @@ if (!empty($_GET['noNavbar'])) {
                                         "inputLow": $('#inputLow').is(":checked"),
                                         "inputSD": $('#inputSD').is(":checked"),
                                         "inputHD": $('#inputHD').is(":checked"),
-                                        "categories_id": $('#download_categories_id').val()
+                                        "categories_id": $('#download_categories_id').val(),
+                                        "usergroups_id": $(".usergroups_id:checked").map(function(){ return $(this).val(); }).get()
                                     },
                                     type: 'post',
                                     success: function (response) {
@@ -1087,9 +1124,9 @@ if (!empty($_GET['noNavbar'])) {
                     );
 
                 </script>
-    <?php
-}
-?>
+                <?php
+            }
+            ?>
 
         </div>
 

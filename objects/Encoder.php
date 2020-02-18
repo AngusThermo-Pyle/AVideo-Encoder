@@ -778,6 +778,11 @@ class Encoder extends ObjectYPT {
         } else {
             $categories_id = $_POST['categories_id'];
         }
+        if (empty($_POST['usergroups_id'])) {
+            $usergroups_id = array();
+        } else {
+            $usergroups_id = $_POST['usergroups_id'];
+        }
 
         $streamers_id = $encoder->getStreamers_id();
         $s = new Streamer($streamers_id);
@@ -802,6 +807,11 @@ class Encoder extends ObjectYPT {
             'password' => $pass,
             'downloadURL' => $global['webSiteRootURL'] . str_replace($global['systemRootPath'], "", $file)
         );
+        $count = 0;
+        foreach ($usergroups_id as $value) {
+            $postFields["usergroups_id[{$count}]"] = $value;
+            $count++;
+        }
         $obj->postFields = $postFields;
 
         if (!empty($file)) {
@@ -823,7 +833,7 @@ class Encoder extends ObjectYPT {
         curl_setopt($curl, CURLOPT_POSTFIELDS, $postFields);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-        $r = curl_exec($curl);
+        $r = remove_utf8_bom(curl_exec($curl));
         error_log("AVideo-Streamer answer {$r}");
         $obj->postFields = count($postFields);
         $obj->response_raw = $r;

@@ -9,6 +9,7 @@ if (!class_exists('Login')) {
         static function run($user, $pass, $aVideoURL, $encodedPass = false) {
             ini_set('memory_limit', '50M');
             ini_set('max_execution_time', 10);
+            error_log("Login::run ($user, ***, $aVideoURL, $encodedPass)");
             global $global;
             $aVideoURL = trim($aVideoURL);
             if (substr($aVideoURL, -1) !== '/') {
@@ -41,7 +42,7 @@ if (!class_exists('Login')) {
             $result = url_get_contents($url, $context);
             if (empty($result)) {
                 error_log("Get Login fail, try again");
-                $result = file_get_contents($url, false, $context);
+                $result = url_get_contents($url, $context);
             }
 
             
@@ -54,10 +55,12 @@ if (!class_exists('Login')) {
                 $object->canUpload = false;
                 $object->canComment = false;
                 $object->categories = array();
+                $object->userGroups = array();
                 error_log("Error on Login context");
                 error_log($url);
                 error_log($result);
             } else {
+                $result = remove_utf8_bom($result);
                 $object = json_decode($result);
                 if (!empty($object)) {
                     $object->streamer = $aVideoURL;
@@ -106,6 +109,7 @@ if (!class_exists('Login')) {
         static function isLogged() {
             $isLogged = !empty($_SESSION['login']->isLogged);
             if (!$isLogged && !empty($_COOKIE['user']) && !empty($_COOKIE['pass']) && !empty($_COOKIE['aVideoURL'])) {
+                error_log("isLogged: Login::run");
                 Login::run($_COOKIE['user'], $_COOKIE['pass'], $_COOKIE['aVideoURL'], true);
             }
             return !empty($_SESSION['login']->isLogged);
@@ -124,7 +128,8 @@ if (!class_exists('Login')) {
         }
 
         static function canUpload() {
-            return self::isLogged() && !empty($_SESSION['login']->canUpload);
+            //error_log("canUpload: ". json_encode($_SESSION['login']));
+            return self::isAdmin() || (self::isLogged() && !empty($_SESSION['login']->canUpload));
         }
 
         static function canComment() {
