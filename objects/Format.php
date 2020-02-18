@@ -31,6 +31,9 @@ if (!class_exists('Format')) {
             $sql = "SELECT * FROM " . static::getTableName() . " WHERE  `order` = $order LIMIT 1";
             $global['lastQuery'] = $sql;
             $res = $global['mysqli']->query($sql);
+            if ($global['mysqli']->connect_errno) {
+                $global['mysqli'] = new mysqli($mysqlHost, $mysqlUser,$mysqlPass,$mysqlDatabase);
+            }
             if ($res) {
                 $row = $res->fetch_assoc();
             } else {
