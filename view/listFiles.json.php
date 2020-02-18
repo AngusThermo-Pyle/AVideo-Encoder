@@ -20,7 +20,7 @@ if(Login::canBulkEncode()){
             } else {
                 $video_array = array();
                 foreach ($global['allowed'] as $value) {
-                    $video_array += glob($path . "*." . $value);
+                    $video_array = array_merge($video_array, glob($path . "*." . $value));
                 }
             }
 
