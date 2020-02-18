@@ -7,6 +7,7 @@ session_name(preg_replace( '/[\W]/', '', $global['webSiteRootURL']));
 require_once $global['systemRootPath'] . 'objects/security.php';
 
 $global['mysqli'] = new mysqli($mysqlHost, $mysqlUser,$mysqlPass,$mysqlDatabase);
+$global['mysqli']->options(MYSQLI_OPT_CONNECT_TIMEOUT, 86400);
 
 $now = new DateTime();
 $mins = $now->getOffset() / 60;
